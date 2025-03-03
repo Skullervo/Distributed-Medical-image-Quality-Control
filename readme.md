@@ -66,7 +66,7 @@ The architecture is composed of three main services:
 
 ## 4️⃣ Docker Installation & Deployment
 
-### 4.1 Pull Docker Containers from Docker Hub
+### Pull Docker Containers from Docker Hub
 Log in to each CSC server and pull the necessary containers:
 
 ```sh
@@ -75,7 +75,7 @@ docker pull skullervo/analyze_service:latest
 docker pull skullervo/postgres:latest
 ```
 
-### 4.2 Start the Services
+### Start the Services
 
 #### Start `fetch_service` on Worker-Node1:
 ```sh
@@ -162,22 +162,22 @@ sudo docker run -d --name=grafana -p 3000:3000 grafana/grafana
 
 ## 6️⃣ Testing & Verification
 
-### 1⃣ Test Fetch Service (`worker-node1`)
+### Test Fetch Service (`worker-node1`)
 ```sh
 grpcurl -plaintext worker-node1-ip:50051 list
 ```
 
-### 2⃣ Test Analyze Service (`worker-node2`)
+### Test Analyze Service (`worker-node2`)
 ```sh
 grpcurl -plaintext worker-node2-ip:50052 list
 ```
 
-### 3⃣ Test PostgreSQL Connection (`master-node`)
+### Test PostgreSQL Connection (`master-node`)
 ```sh
 psql -h master-node-ip -U postgres -d QA-results -c "\dt"
 ```
 
-### 4⃣ Test the Entire System
+### Test the Entire System
 Run the test script:
 ```sh
 python test_analyze_service.py
@@ -190,7 +190,7 @@ python test_analyze_service.py
 
 Kubernetes allows us to manage our microservices architecture in a distributed and scalable manner.
 
-### 7.1 **Kubernetes Components**
+### **Kubernetes Components**
 Each service runs as a separate **Deployment**, and they communicate through **Service** resources.  
 
 The required components are:
@@ -201,10 +201,10 @@ The required components are:
 - **Ingress Controller** (for external access)
 
 
-### 7.2 **Kubernetes Deployment Files**
+### **Kubernetes Deployment Files**
 Below are Kubernetes YAML manifests for deploying the services.
 
-#### 7.2.1 **fetch_service Deployment**
+#### **fetch_service Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -242,7 +242,7 @@ spec:
       targetPort: 50051
 ```
 
-#### 7.2.2 **analyze_service Deployment**
+#### **analyze_service Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -294,7 +294,7 @@ spec:
       targetPort: 50052
 ```
 
-#### 7.2.3 **PostgreSQL Deployment**
+#### **PostgreSQL Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -342,7 +342,7 @@ spec:
       targetPort: 5432
 ```
 
-#### 7.2.4 **Secrets for PostgreSQL**
+#### **Secrets for PostgreSQL**
 Use **Kubernetes Secrets** to store sensitive data instead of hardcoding them.
 
 **db-secret.yaml**
@@ -360,7 +360,7 @@ data:
 💡 **Using Kubernetes Secrets prevents exposing credentials directly in YAML files.**
 
 
-### 7.3 **Deployment Process**
+### **Deployment Process**
 Once the YAML files are ready, apply them to the Kubernetes cluster:
 
 1. **Create a Kubernetes Namespace**
@@ -382,7 +382,7 @@ Once the YAML files are ready, apply them to the Kubernetes cluster:
    ```
 
 
-### 7.4 **Verifying Deployment**
+### **Verifying Deployment**
 Check that all services are running:
 ```sh
 kubectl get pods -n dicom-analysis
