@@ -43,7 +43,6 @@ The architecture is composed of three main services:
 - 🐄 **PostgreSQL (Master-Node)** – Stores the analysis results.
 - 🏥 **Orthanc (Master-Node)** - Stores ultrasound DICOM images.
 
----
 
 ## 2️⃣ Technologies Used
 - ✅ **gRPC** – Efficient and fast communication between microservices  
@@ -54,7 +53,6 @@ The architecture is composed of three main services:
 - :x: **Prometheus** – In progress
 - :x: **Grafana** – In progress
 
----
 
 ## 3️⃣ Architecture
 ```
@@ -65,7 +63,6 @@ The architecture is composed of three main services:
 - **analyze_service** processes the images and stores the results in the database.
 - **PostgreSQL** stores the analysis data.
 
----
 
 ## 4️⃣ Docker Installation & Deployment
 
@@ -151,7 +148,6 @@ scrape_configs:
 sudo docker run -d --name=grafana -p 3000:3000 grafana/grafana
 ```
 
----
 
 ## 5️⃣ Microservices Overview
 
@@ -163,7 +159,6 @@ sudo docker run -d --name=grafana -p 3000:3000 grafana/grafana
 | **PostgreSQL**      | Master-Node   | `5432`    | Stores analysis results                            |
 
 
----
 
 ## 6️⃣ Testing & Verification
 
@@ -190,7 +185,6 @@ python test_analyze_service.py
 
 ✅ **If the analysis runs successfully, the entire system is working in CSC!** 🎉
 
----
 
 ## 7️⃣ Kubernetes Installation & Deployment
 
@@ -206,7 +200,6 @@ The required components are:
 - **Persistent Volume** (for PostgreSQL and Orthanc)
 - **Ingress Controller** (for external access)
 
----
 
 ### 7.2 **Kubernetes Deployment Files**
 Below are Kubernetes YAML manifests for deploying the services.
@@ -366,7 +359,6 @@ data:
 
 💡 **Using Kubernetes Secrets prevents exposing credentials directly in YAML files.**
 
----
 
 ### 7.3 **Deployment Process**
 Once the YAML files are ready, apply them to the Kubernetes cluster:
@@ -389,7 +381,6 @@ Once the YAML files are ready, apply them to the Kubernetes cluster:
    kubectl apply -f analyze_service.yaml --namespace=dicom-analysis
    ```
 
----
 
 ### 7.4 **Verifying Deployment**
 Check that all services are running:
@@ -400,7 +391,6 @@ kubectl get services -n dicom-analysis
 
 Ensure that all pods are in a `Running` state.
 
----
 
 ### ✅ **Next Steps**
 - 🔄 **Autoscaling**: `kubectl autoscale deployment analyze-service --cpu-percent=80 --min=1 --max=5`
@@ -408,7 +398,6 @@ Ensure that all pods are in a `Running` state.
 - 📊 **Grafana Dashboard** (visualizing Prometheus metrics)
 - 🏎 **HPA (Horizontal Pod Autoscaler)** (scaling based on load)
 
----
 
 ## 8️⃣ 🛠 Development Tools
 - 🐍 **Python** (`pydicom`, `grpcio`, `grpcio-tools`)
@@ -416,7 +405,6 @@ Ensure that all pods are in a `Running` state.
 - 🐄 **PostgreSQL**
 - 🏥 **Orthanc (DICOM server)**
 
----
 
 ## 9️⃣ 📜 Future Enhancements
 - 🔄 **Asynchronous communication for the analysis service** (Kafka no longer needed due to gRPC)
