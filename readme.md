@@ -45,7 +45,7 @@ The architecture is composed of three main services:
 
 ---
 
-2️⃣ 📌 Technologies Used
+## 2️⃣ Technologies Used
 - ✅ **gRPC** – Efficient and fast communication between microservices  
 - ✅ **Docker & Docker Hub** – Container management and deployment to CSC  
 - ✅ **PostgreSQL** – Database for storing analysis results  
@@ -56,7 +56,7 @@ The architecture is composed of three main services:
 
 ---
 
-3️⃣ 🔥 Architecture
+## 3️⃣ Architecture
 ```
 [Orthanc]  → [fetch_service]  →  [analyze_service]  →  [PostgreSQL]
 (Master-node) (Worker-Node1)      (Worker-Node2)       (Master-Node)
@@ -67,9 +67,9 @@ The architecture is composed of three main services:
 
 ---
 
-4️⃣ 🚀 Docker Installation & Deployment
+## 4️⃣ Docker Installation & Deployment
 
-## 4.1 Pull Docker Containers from Docker Hub
+### 4.1 Pull Docker Containers from Docker Hub
 Log in to each CSC server and pull the necessary containers:
 
 ```sh
@@ -78,7 +78,7 @@ docker pull skullervo/analyze_service:latest
 docker pull skullervo/postgres:latest
 ```
 
-## 4.2 Start the Services
+### 4.2 Start the Services
 
 #### Start `fetch_service` on Worker-Node1:
 ```sh
@@ -153,7 +153,7 @@ sudo docker run -d --name=grafana -p 3000:3000 grafana/grafana
 
 ---
 
-5️⃣ Microservices Overview
+## 5️⃣ Microservices Overview
 
 | **Service**         | **Node**      | **Port**  | **Function**                                       |
 |---------------------|---------------|-----------|----------------------------------------------------|
@@ -165,7 +165,7 @@ sudo docker run -d --name=grafana -p 3000:3000 grafana/grafana
 
 ---
 
-6️⃣ Testing & Verification
+## 6️⃣ Testing & Verification
 
 ### 1⃣ Test Fetch Service (`worker-node1`)
 ```sh
@@ -192,16 +192,11 @@ python test_analyze_service.py
 
 ---
 
-7️⃣ Kubernetes Installation & Deployment
+## 7️⃣ Kubernetes Installation & Deployment
 
-Sure! Here’s the **Kubernetes Deployment** section in English with a structured format that fits well into your README.
-
----
-
-# 7️⃣ **Kubernetes Deployment**
 Kubernetes allows us to manage our microservices architecture in a distributed and scalable manner.
 
-## 7.1 **Kubernetes Components**
+### 7.1 **Kubernetes Components**
 Each service runs as a separate **Deployment**, and they communicate through **Service** resources.  
 
 The required components are:
@@ -213,10 +208,10 @@ The required components are:
 
 ---
 
-## 7.2 **Kubernetes Deployment Files**
+### 7.2 **Kubernetes Deployment Files**
 Below are Kubernetes YAML manifests for deploying the services.
 
-### 7.2.1 **fetch_service Deployment**
+#### 7.2.1 **fetch_service Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -254,7 +249,7 @@ spec:
       targetPort: 50051
 ```
 
-### 7.2.2 **analyze_service Deployment**
+#### 7.2.2 **analyze_service Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -306,7 +301,7 @@ spec:
       targetPort: 50052
 ```
 
-### 7.2.3 **PostgreSQL Deployment**
+#### 7.2.3 **PostgreSQL Deployment**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -354,7 +349,7 @@ spec:
       targetPort: 5432
 ```
 
-### 7.2.4 **Secrets for PostgreSQL**
+#### 7.2.4 **Secrets for PostgreSQL**
 Use **Kubernetes Secrets** to store sensitive data instead of hardcoding them.
 
 **db-secret.yaml**
@@ -373,7 +368,7 @@ data:
 
 ---
 
-## 7.3 **Deployment Process**
+### 7.3 **Deployment Process**
 Once the YAML files are ready, apply them to the Kubernetes cluster:
 
 1. **Create a Kubernetes Namespace**
@@ -396,7 +391,7 @@ Once the YAML files are ready, apply them to the Kubernetes cluster:
 
 ---
 
-## 7.4 **Verifying Deployment**
+### 7.4 **Verifying Deployment**
 Check that all services are running:
 ```sh
 kubectl get pods -n dicom-analysis
@@ -407,7 +402,7 @@ Ensure that all pods are in a `Running` state.
 
 ---
 
-## ✅ **Next Steps**
+### ✅ **Next Steps**
 - 🔄 **Autoscaling**: `kubectl autoscale deployment analyze-service --cpu-percent=80 --min=1 --max=5`
 - 🌍 **Ingress Controller** (for external access)
 - 📊 **Grafana Dashboard** (visualizing Prometheus metrics)
@@ -415,11 +410,7 @@ Ensure that all pods are in a `Running` state.
 
 ---
 
-💡 **Now your README includes a well-structured Kubernetes section in English!** 🚀 You can expand this further by adding monitoring and autoscaling in future updates. Let me know if you need refinements! 😊
-
----
-
-8️⃣ 🛠 Development Tools
+## 8️⃣ 🛠 Development Tools
 - 🐍 **Python** (`pydicom`, `grpcio`, `grpcio-tools`)
 - 🐳 **Docker**
 - 🐄 **PostgreSQL**
@@ -427,7 +418,7 @@ Ensure that all pods are in a `Running` state.
 
 ---
 
-9️⃣ 📜 Future Enhancements
+## 9️⃣ 📜 Future Enhancements
 - 🔄 **Asynchronous communication for the analysis service** (Kafka no longer needed due to gRPC)
 - 🔍 **Logging and error handling improvements**
 - 📊 **Grafana monitoring for microservices**
