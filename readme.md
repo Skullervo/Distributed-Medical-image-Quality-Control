@@ -28,7 +28,7 @@
 9. [Future Enhancements](#9-future-enhancements)
 
 
-1️⃣ Introduction
+## 1️⃣ Introduction
 
 This project consists of **gRPC-based microservices** that analyze technical image quality of ultrasound air images **DICOM** on a CSC virtual server. 
 
