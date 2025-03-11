@@ -204,7 +204,7 @@ The required components are:
 ### **Kubernetes Deployment Files**
 Below are Kubernetes YAML manifests for deploying the services.
 
-#### **fetch_service Deployment**
+#### **fetch_service Deployment/Service**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -222,12 +222,12 @@ spec:
     spec:
       containers:
       - name: fetch-service
-        image: skullervo/fetch_service:latest
+        image: skullervo/fetch_service:worker1_kube
         ports:
         - containerPort: 50051
         env:
         - name: ORTHANC_URL
-          value: "http://orthanc-service:8042"
+          value: "http://195.148.20.88:32032"
 ---
 apiVersion: v1
 kind: Service
@@ -237,12 +237,13 @@ spec:
   selector:
     app: fetch-service
   ports:
-    - protocol: TCP
-      port: 50051
-      targetPort: 50051
+  - protocol: TCP
+    port: 50051
+    targetPort: 50051
+  type: ClusterIP # Sisäinen palvelu Kubernetesin sisällä
 ```
 
-#### **analyze_service Deployment**
+#### **analyze_service Deployment/Service**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -260,26 +261,28 @@ spec:
     spec:
       containers:
       - name: analyze-service
-        image: skullervo/analyze_service:latest
+        image: skullervo/analyze_service:worker2_kube
         ports:
         - containerPort: 50052
         env:
         - name: FETCH_SERVICE_URL
           value: "fetch-service:50051"
-        - name: POSTGRES_HOST
-          value: "postgres-service"
-        - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: username
-        - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
-        - name: POSTGRES_DB
+        - name: DATABASE_HOST  
+          #value: "postgres.default.svc.cluster.local"  
+          value: "10.10.77.135"
+        - name: DATABASE_USER
+          value: "<your_username>"
+        - name: DATABASE_PASSWORD
+          value: "<your_psw>"
+        - name: DATABASE_NAME
           value: "QA-results"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
 ---
 apiVersion: v1
 kind: Service
@@ -289,12 +292,13 @@ spec:
   selector:
     app: analyze-service
   ports:
-    - protocol: TCP
-      port: 50052
-      targetPort: 50052
+  - protocol: TCP
+    port: 50052
+    targetPort: 50052
+  type: ClusterIP
 ```
 
-#### **PostgreSQL Deployment**
+#### **PostgreSQL Deployment/Service**
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -312,81 +316,136 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: skullervo/postgres:latest
+        image: skullervo/postgres:master1
         ports:
         - containerPort: 5432
         env:
         - name: POSTGRES_USER
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: username
+          value: "<your_username>"
         - name: POSTGRES_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
+          value: "<your_psw>"
         - name: POSTGRES_DB
           value: "QA-results"
+        resources:  
+          requests:
+            memory: "512Mi"  
+            cpu: "250m"      
+          limits:
+            memory: "2Gi"     
+            cpu: "1000m"     
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+      volumes:
+      - name: postgres-storage
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: postgres-service
+  name: postgres
 spec:
   selector:
     app: postgres
   ports:
-    - protocol: TCP
-      port: 5432
-      targetPort: 5432
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+  type: ClusterIP
 ```
 
-#### **Secrets for PostgreSQL**
-Use **Kubernetes Secrets** to store sensitive data instead of hardcoding them.
-
-**db-secret.yaml**
+#### **Orthanc Deployment/Service/ConfigMap**
 ```yaml
-apiVersion: v1
-kind: Secret
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: db-secret
-type: Opaque
+  name: orthanc
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: orthanc
+  template:
+    metadata:
+      labels:
+        app: orthanc
+    spec:
+      containers:
+        - name: orthanc
+          image: skullervo/orthanc:master1
+          ports:
+            - containerPort: 8042
+            - containerPort: 4242
+          volumeMounts:
+            - name: config-volume
+              mountPath: /etc/orthanc/
+            - name: storage-volume
+              mountPath: /var/lib/orthanc/
+      volumes:
+        - name: config-volume
+          configMap:
+            name: orthanc-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: orthanc
+  namespace: default
+spec:
+  type: NodePort
+  selector:
+    app: orthanc
+  ports:
+    - name: http
+      protocol: TCP
+      port: 8042
+      targetPort: 8042
+      nodePort: 32032
+    - name: dicom
+      protocol: TCP
+      port: 4242
+      targetPort: 4242
+      nodePort: 31437
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: orthanc-config
+  namespace: default
 data:
-  username: cG9zdGdyZXM=  # Base64-encoded "postgres"
-  password: cG9oZGUyNA==  # Base64-encoded "pohde24"
+  orthanc.json: |
+    {
+      "Name": "Orthanc",
+      "HttpServerEnabled": true,
+      "HttpPort": 8042,
+      "DicomServerEnabled": true,
+      "DicomPort": 4242,
+      "RemoteAccessAllowed": true,
+      "AuthenticationEnabled" : false,
+      "DicomAet": "ORTHANC",
+      "DicomModalities": {},
+      "StorageDirectory": "/var/lib/orthanc"
+    }
 ```
-
-💡 **Using Kubernetes Secrets prevents exposing credentials directly in YAML files.**
 
 
 ### **Deployment Process**
 Once the YAML files are ready, apply them to the Kubernetes cluster:
 
-1. **Create a Kubernetes Namespace**
+1. **Deploy PostgreSQL and Orthanc**
    ```sh
-   kubectl create namespace dicom-analysis
+   kubectl apply -f fetch_service.yaml 
+   kubectl apply -f analyze_service.yaml 
+   kubectl apply -f postgres.yaml
+   kubectl apply -f orthanc.yaml
    ```
-2. **Apply Secrets and ConfigMaps**
-   ```sh
-   kubectl apply -f db-secret.yaml --namespace=dicom-analysis
-   ```
-3. **Deploy PostgreSQL and Orthanc**
-   ```sh
-   kubectl apply -f postgres.yaml --namespace=dicom-analysis
-   ```
-4. **Deploy fetch_service and analyze_service**
-   ```sh
-   kubectl apply -f fetch_service.yaml --namespace=dicom-analysis
-   kubectl apply -f analyze_service.yaml --namespace=dicom-analysis
-   ```
-
 
 ### **Verifying Deployment**
 Check that all services are running:
 ```sh
-kubectl get pods -n dicom-analysis
-kubectl get services -n dicom-analysis
+kubectl get pods 
+kubectl get services
 ```
 
 Ensure that all pods are in a `Running` state.
@@ -400,16 +459,13 @@ Ensure that all pods are in a `Running` state.
 
 
 ## 8️⃣ 🛠 Development Tools
-- 🐍 **Python** (`pydicom`, `grpcio`, `grpcio-tools`)
+- 🐍 **Python** 
 - 🐳 **Docker**
+- 🧊 **Kubernetes**
 - 🐄 **PostgreSQL**
 - 🏥 **Orthanc (DICOM server)**
+- 📊 **Prometheus/Grafana**
 
-
-## 9️⃣ 📜 Future Enhancements
-- 🔄 **Asynchronous communication for the analysis service** (Kafka no longer needed due to gRPC)
-- 🔍 **Logging and error handling improvements**
-- 📊 **Grafana monitoring for microservices**
 
 ---
 
