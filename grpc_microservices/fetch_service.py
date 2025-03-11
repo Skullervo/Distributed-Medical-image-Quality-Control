@@ -5,9 +5,8 @@ import fetch_service_pb2_grpc
 import requests
 import os
 
+#TODO ------> save all env variables from code to own file
 ORTHANC_URL = os.getenv("ORTHANC_URL", "http://localhost:8042")
-#ORTHANC_URL = os.getenv("ORTHANC_URL", "http://host.docker.internal:8042")
-
 
 class FetchService(fetch_service_pb2_grpc.FetchServiceServicer):
     def FetchDicomData(self, request, context):
@@ -24,7 +23,7 @@ class FetchService(fetch_service_pb2_grpc.FetchServiceServicer):
         return fetch_service_pb2.FetchResponse(dicom_data=response.content)
 
 def serve():
-    # 🔹 Lisää maksimi viestikoko (200MB)
+
     options = [
         ("grpc.max_send_message_length", 200 * 1024 * 1024),
         ("grpc.max_receive_message_length", 200 * 1024 * 1024),
@@ -40,4 +39,3 @@ def serve():
 
 if __name__ == "__main__":
     serve()
-
