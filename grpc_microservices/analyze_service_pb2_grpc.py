@@ -26,8 +26,6 @@ if _version_not_supported:
 
 
 class AnalyzeServiceStub(object):
-    """gRPC-palvelun määrittely
-    """
 
     def __init__(self, channel):
         """Constructor.
@@ -48,8 +46,6 @@ class AnalyzeServiceStub(object):
 
 
 class AnalyzeServiceServicer(object):
-    """gRPC-palvelun määrittely
-    """
 
     def AnalyzeDicomData(self, request, context):
         """Missing associated documentation comment in .proto file."""
