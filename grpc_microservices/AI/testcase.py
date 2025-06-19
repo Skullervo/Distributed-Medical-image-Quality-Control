@@ -1,8 +1,7 @@
 from openai import OpenAI
 #import openai
 
-
-
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(
     api_key=openai_api_key,  # This is the default and can be omitted

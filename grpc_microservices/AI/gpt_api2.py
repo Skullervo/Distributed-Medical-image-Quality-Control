@@ -8,7 +8,7 @@ import threading
 
 # Lataa ympäristömuuttujat
 load_dotenv()
-
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 
 if openai_api_key is None:

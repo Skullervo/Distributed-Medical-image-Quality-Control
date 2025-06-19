@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-
 if openai_api_key is None:
     raise ValueError("OpenAI API key is missing! Set it in the .env file.")
 
